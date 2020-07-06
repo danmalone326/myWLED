@@ -1071,6 +1071,24 @@ uint16_t WS2812FX::larson_scanner(bool dual) {
   return FRAMETIME;
 }
 
+uint16_t WS2812FX::mode_larson_scanner2(void) {
+  uint16_t counter = now * ((SEGMENT.speed >> 2) +8);
+  uint16_t index = counter * SEGLEN  >> 16;
+
+  fade_out(SEGMENT.intensity);
+
+  if (SEGENV.step > index && SEGENV.step - index > SEGLEN/2) {
+    SEGENV.aux0 = !SEGENV.aux0;
+  }
+  
+  for (uint16_t i = SEGENV.step; i < index; i++) {
+    uint16_t j = (SEGENV.aux0)?i:SEGLEN-1-i;
+    setPixelColor( j, color_from_palette(j, true, PALETTE_SOLID_WRAP, 0));
+  }
+
+  SEGENV.step = index;
+  return FRAMETIME;
+}
 
 /*
  * Firing comets from one end. "Lighthouse"
