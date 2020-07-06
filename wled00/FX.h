@@ -98,7 +98,7 @@
 #define IS_REVERSE      ((SEGMENT.options & REVERSE     ) == REVERSE     )
 #define IS_SELECTED     ((SEGMENT.options & SELECTED    ) == SELECTED    )
 
-#define MODE_COUNT  112
+#define MODE_COUNT  113
 
 #define FX_MODE_STATIC                   0
 #define FX_MODE_BLINK                    1
@@ -212,6 +212,7 @@
 #define FX_MODE_PHASEDNOISE            109
 #define FX_MODE_FLOW                   110
 #define FX_MODE_CHUNCHUN               111
+#define FX_MODE_LARSON_SCANNER2        112
 
 class WS2812FX {
   typedef uint16_t (WS2812FX::*mode_ptr)(void);
@@ -339,6 +340,7 @@ class WS2812FX {
       _mode[FX_MODE_RUNNING_RED_BLUE]        = &WS2812FX::mode_running_red_blue;
       _mode[FX_MODE_RUNNING_RANDOM]          = &WS2812FX::mode_running_random;
       _mode[FX_MODE_LARSON_SCANNER]          = &WS2812FX::mode_larson_scanner;
+      _mode[FX_MODE_LARSON_SCANNER2]         = &WS2812FX::mode_larson_scanner2;
       _mode[FX_MODE_COMET]                   = &WS2812FX::mode_comet;
       _mode[FX_MODE_FIREWORKS]               = &WS2812FX::mode_fireworks;
       _mode[FX_MODE_RAIN]                    = &WS2812FX::mode_rain;
@@ -536,6 +538,7 @@ class WS2812FX {
       mode_running_red_blue(void),
       mode_running_random(void),
       mode_larson_scanner(void),
+      mode_larson_scanner2(void),
       mode_comet(void),
       mode_fireworks(void),
       mode_rain(void),
@@ -695,7 +698,7 @@ const char JSON_mode_names[] PROGMEM = R"=====([
 "Twinklefox","Twinklecat","Halloween Eyes","Solid Pattern","Solid Pattern Tri","Spots","Spots Fade","Glitter","Candle","Fireworks Starburst",
 "Fireworks 1D","Bouncing Balls","Sinelon","Sinelon Dual","Sinelon Rainbow","Popcorn","Drip","Plasma","Percent","Ripple Rainbow",
 "Heartbeat","Pacifica","Candle Multi", "Solid Glitter","Sunrise","Phased","Twinkleup","Noise Pal", "Sine","Phased Noise",
-"Flow","Chunchun"
+"Flow","Chunchun","Larson Scanner"
 ])=====";
 
 
