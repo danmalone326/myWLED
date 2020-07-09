@@ -25,6 +25,7 @@
 */
 
 #include "FX.h"
+#include "math.h"
 
 #define IBN 5100
 #define PALETTE_SOLID_WRAP (paletteBlend == 1 || paletteBlend == 3)
@@ -1072,21 +1073,55 @@ uint16_t WS2812FX::larson_scanner(bool dual) {
 }
 
 uint16_t WS2812FX::mode_larson_scanner2(void) {
-  uint16_t counter = now * ((SEGMENT.speed >> 2) +8);
-  uint16_t index = counter * SEGLEN  >> 16;
+  uint32_t maxRoundTripTime = 25000;
+  uint32_t minRoundTripTime = 250;
 
-  fade_out(SEGMENT.intensity);
+  uint32_t roundTripTime = ((maxRoundTripTime - minRoundTripTime) * SEGMENT.speed / 255) + minRoundTripTime;
+  uint32_t halfTripTime = roundTripTime/2;
 
-  if (SEGENV.step > index && SEGENV.step - index > SEGLEN/2) {
-    SEGENV.aux0 = !SEGENV.aux0;
-  }
+  uint32_t thisFrameTime = now % roundTripTime;
+
+  float thisFrameCenter = SEGLEN * ( 1 - ( abs((float)thisFrameTime - halfTripTime) / halfTripTime));
+
+  uint16_t bleedLength = ( SEGLEN / 2 ) * SEGMENT.intensity / 255;
+
+  uint16_t lowPixel = floor(thisFrameCenter - bleedLength);
+  if (lowPixel < 0) { lowPixel = 0; }
+
+  uint16_t highPixel = floor(thisFrameCenter + bleedLength);
+  if (highPixel > SEGLEN - 1) { highPixel = SEGLEN - 1; }
   
-  for (uint16_t i = SEGENV.step; i < index; i++) {
-    uint16_t j = (SEGENV.aux0)?i:SEGLEN-1-i;
-    setPixelColor( j, color_from_palette(j, true, PALETTE_SOLID_WRAP, 0));
+  
+
+  for (uint16_t index = 0; index < SEGLEN; index++) {
+    if ((index < lowPixel) or (index > highPixel)) {
+      setPixelColor(index, color_from_palette(index, true, PALETTE_SOLID_WRAP, 1));
+    } else {
+      uint8_t fade = round( (float) 255 / (pow(2, abs(index - thisFrameCenter))));
+      setPixelColor(index, color_blend(SEGCOLOR(1), SEGCOLOR(0), fade));
+    }
   }
 
-  SEGENV.step = index;
+//    setPixelColor(i, color_blend(SEGCOLOR(1), SEGCOLOR(0), lum));
+
+  
+
+//  uint16_t counter = now * ((SEGMENT.speed >> 2) +8);
+//  uint16_t index = counter * SEGLEN  >> 16;
+//
+//  fade_out(SEGMENT.intensity);
+//
+//  if (SEGENV.step > index && SEGENV.step - index > SEGLEN/2) {
+//    SEGENV.aux0 = !SEGENV.aux0;
+//  }
+//  
+//  for (uint16_t i = SEGENV.step; i < index; i++) {
+//    uint16_t j = (SEGENV.aux0)?i:SEGLEN-1-i;
+//    setPixelColor( j, color_from_palette(j, true, PALETTE_SOLID_WRAP, 0));
+//  }
+//
+//  SEGENV.step = index;
+
   return FRAMETIME;
 }
 
