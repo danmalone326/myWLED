@@ -24,6 +24,8 @@
   Modified heavily for WLED
 */
 
+#define WLED_DEBUG
+
 #include "FX.h"
 #include "math.h"
 
@@ -1073,18 +1075,28 @@ uint16_t WS2812FX::larson_scanner(bool dual) {
 }
 
 uint16_t WS2812FX::mode_larson_scanner2(void) {
-  uint32_t maxRoundTripTime = 5000;
-  uint32_t minRoundTripTime = 1000;
+  uint32_t maxRoundTripTime = 15000;
+  uint32_t minRoundTripTime = 250;
   uint32_t roundTripTime = ((maxRoundTripTime - minRoundTripTime) * (255 - SEGMENT.speed) / 255) + minRoundTripTime;
   uint32_t halfTripTime = roundTripTime/2;
   
-//  uint16_t trip = (256 - SEGMENT.speed) * 100;
-  uint16_t whereNow = now % roundTripTime;
-  uint16_t indexNow = ( SEGLEN + 1 ) * abs(whereNow - halfTripTime) / halfTripTime;
-  
+  uint32_t whereNow = now % roundTripTime;
+  float thisFrameCenter = (float) (SEGLEN-1) * abs((float) whereNow - halfTripTime) / halfTripTime;
+
+  float bleedLength = (float) (SEGLEN/2) * SEGMENT.intensity / 255;
+
+  uint16_t lowPixel = 0;
+  if (thisFrameCenter > bleedLength) { lowPixel = floor(thisFrameCenter - bleedLength); }
+
+  uint16_t highPixel = SEGLEN - 1;
+  if (ceil(thisFrameCenter + bleedLength) < (SEGLEN - 1)) { highPixel = ceil(thisFrameCenter + bleedLength); }
+
   for (uint16_t index = 0; index < SEGLEN; index++) {
-    if ( index < indexNow ) {
-      setPixelColor(index, color_from_palette(index, true, PALETTE_SOLID_WRAP, 0));
+    if (( index >= lowPixel ) && ( index <= highPixel )) {
+      float indexDistance = (float) index - thisFrameCenter;
+      if (indexDistance < 0) { indexDistance = -indexDistance; }  // abs(x) didn't behave well with floats
+      uint8_t fade = round( (float) 255 / (pow(2, indexDistance )));
+      setPixelColor(index, color_blend(SEGCOLOR(1), SEGCOLOR(0), fade));
     } else {
       setPixelColor(index, color_from_palette(index, true, PALETTE_SOLID_WRAP, 1));
     }
