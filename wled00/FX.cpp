@@ -1073,8 +1073,17 @@ uint16_t WS2812FX::larson_scanner(bool dual) {
 }
 
 uint16_t WS2812FX::mode_larson_scanner2(void) {
+  uint32_t maxRoundTripTime = 5000;
+  uint32_t minRoundTripTime = 1000;
+  uint32_t roundTripTime = ((maxRoundTripTime - minRoundTripTime) * (255 - SEGMENT.speed) / 255) + minRoundTripTime;
+  uint32_t halfTripTime = roundTripTime/2;
+  
+//  uint16_t trip = (256 - SEGMENT.speed) * 100;
+  uint16_t whereNow = now % roundTripTime;
+  uint16_t indexNow = ( SEGLEN + 1 ) * abs(whereNow - halfTripTime) / halfTripTime;
+  
   for (uint16_t index = 0; index < SEGLEN; index++) {
-    if ( index < ((now % ((SEGLEN + 1) * 1000) ) / 1000 ) ) {
+    if ( index < indexNow ) {
       setPixelColor(index, color_from_palette(index, true, PALETTE_SOLID_WRAP, 0));
     } else {
       setPixelColor(index, color_from_palette(index, true, PALETTE_SOLID_WRAP, 1));
