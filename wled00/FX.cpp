@@ -1083,7 +1083,7 @@ uint16_t WS2812FX::mode_larson_scanner2(void) {
   uint32_t whereNow = now % roundTripTime;
   float thisFrameCenter = (float) (SEGLEN-1) * abs((float) whereNow - halfTripTime) / halfTripTime;
 
-  float bleedLength = (float) 1 + ((SEGLEN * 3/4) * SEGMENT.intensity / 255);
+  float bleedLength = (float) (SEGLEN * SEGMENT.intensity / 255);
 
   uint16_t lowPixel = 0;
   if (thisFrameCenter > bleedLength) { lowPixel = floor(thisFrameCenter - bleedLength); }
