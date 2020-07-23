@@ -29,6 +29,87 @@
 #define IBN 5100
 #define PALETTE_SOLID_WRAP (paletteBlend == 1 || paletteBlend == 3)
 
+/*
+ * Rotating lamp
+ */
+
+#define lamp_columns 7
+
+uint8_t getColumnTopLed(uint8_t column) {
+  uint8_t result;
+  switch (column) {
+  case 1:  
+  case 8:
+    result = 0; 
+    break;
+  case 2: 
+  case 9:
+    result = 4; 
+    break;
+  case 3: 
+    result = 1; 
+    break;
+  case 4: 
+    result = 5; 
+    break;
+  case 5: 
+    result = 2; 
+    break;
+  case 6: 
+    result = 6; 
+    break;
+  case 7: 
+  case 0:
+    result = 3; 
+    break;
+  }
+  return result;
+}
+
+uint8_t getColumnBottomLed(uint8_t column) {
+  uint8_t result;
+  switch (column) {
+  case 1:  
+  case 8:  
+    result = 7; 
+    break;
+  case 2:
+  case 9:
+    result = 11; 
+    break;
+  case 3: 
+    result = 8; 
+    break;
+  case 4: 
+    result = 5; 
+    break;
+  case 5: 
+    result = 9; 
+    break;
+  case 6: 
+    result = 6; 
+    break;
+  case 7:
+  case 0: 
+    result = 10; 
+    break;
+  }
+  return result;
+}
+
+uint16_t WS2812FX::rotate(bool dual) {
+    return FRAMETIME;
+}
+
+
+uint16_t WS2812FX::mode_lamp_rotate(void) {
+    return rotate(false);
+}
+
+uint16_t WS2812FX::mode_lamp_rotate_dual(void) {
+    return rotate(true);  
+}
+
 
 /*
  * No blinking. Just plain old static light.
