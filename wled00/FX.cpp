@@ -33,7 +33,7 @@
  * Rotating lamp
  */
 
-#define lamp_columns 7
+#define lampColumns 7
 
 uint8_t getColumnTopLed(uint8_t column) {
   uint8_t result;
@@ -98,16 +98,73 @@ uint8_t getColumnBottomLed(uint8_t column) {
 }
 
 uint16_t WS2812FX::rotate(bool dual) {
-    return FRAMETIME;
+  uint8_t columnCounter;
+  uint8_t  fade;
+  float thisLedDistance;
+  uint32_t backColor;
+  uint32_t tempColor;
+
+  if (dual) {
+    backColor = SEGCOLOR(2);
+  } else {
+    backColor = SEGCOLOR(1);
+  }
+  fill(backColor);
+
+  float rotationPosition;
+  uint8_t centeredOn;
+
+  uint32_t maxRotateTime = 10000;
+  uint32_t minRotateTime = 50;
+
+  uint32_t rotateTime = ((maxRotateTime - minRotateTime) * (255 - SEGMENT.speed) / 255) + minRotateTime;
+  
+  uint32_t thisFrameTime = now % rotateTime;
+
+  rotationPosition = (float(lampColumns) * thisFrameTime / rotateTime) + 1;
+  centeredOn = round(rotationPosition);
+  
+  for (columnCounter=centeredOn-1; columnCounter<=centeredOn+1;columnCounter++) {
+    thisLedDistance = rotationPosition - columnCounter;
+    if (thisLedDistance < 0) {
+      thisLedDistance = -thisLedDistance;
+    }
+    
+    fade = round( pow(255, (1 - ((float) thisLedDistance / (lampColumns/2)))));
+    tempColor = color_blend(backColor, SEGCOLOR(0), fade);
+    setPixelColor(getColumnTopLed(columnCounter),tempColor);
+    setPixelColor(getColumnBottomLed(columnCounter),tempColor);
+  }
+
+  if (dual) {
+    rotationPosition -= (lampColumns / 2);
+    if (rotationPosition < 1) { 
+      rotationPosition += lampColumns; 
+    }
+    centeredOn = round(rotationPosition);
+    for (columnCounter=centeredOn-1; columnCounter<=centeredOn+1;columnCounter++) {
+      thisLedDistance = rotationPosition - columnCounter;
+      if (thisLedDistance < 0) {
+        thisLedDistance = -thisLedDistance;
+      }
+      
+      fade = round( pow(255, (1 - ((float) thisLedDistance / (lampColumns/2)))));
+      tempColor = color_blend(backColor, SEGCOLOR(1), fade);
+      setPixelColor(getColumnTopLed(columnCounter),tempColor);
+      setPixelColor(getColumnBottomLed(columnCounter),tempColor);
+    }
+  }
+
+  return FRAMETIME;
 }
 
 
 uint16_t WS2812FX::mode_lamp_rotate(void) {
-    return rotate(false);
+  return rotate(false);
 }
 
 uint16_t WS2812FX::mode_lamp_rotate_dual(void) {
-    return rotate(true);  
+  return rotate(true);  
 }
 
 
