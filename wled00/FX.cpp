@@ -33,68 +33,52 @@
  * Rotating lamp
  */
 
-#define lampColumns 7
+uint8_t lampColumns = 7;
+uint8_t lampRows = 5;
+bool lampRowsFirst = false;
 
-uint8_t getColumnTopLed(uint8_t column) {
-  uint8_t result;
-  switch (column) {
-  case 1:  
-  case 8:
-    result = 0; 
-    break;
-  case 2: 
-  case 9:
-    result = 4; 
-    break;
-  case 3: 
-    result = 1; 
-    break;
-  case 4: 
-    result = 5; 
-    break;
-  case 5: 
-    result = 2; 
-    break;
-  case 6: 
-    result = 6; 
-    break;
-  case 7: 
-  case 0:
-    result = 3; 
-    break;
+//    setPixelColor(getColumnTopLed(columnCounter),tempColor);
+
+void WS2812FX::setRowColor(uint8_t row, uint32_t color) {
+  uint8_t startWith;
+  uint8_t incrementBy;
+  uint8_t endWith;
+  uint16_t pixel;
+
+  if (lampRowsFirst) {
+    startWith = row * lampColumns;
+    incrementBy = 1;
+    endWith = startWith + (lampRows-1);
+  } else {
+    startWith = row;
+    incrementBy = lampRows;
+    endWith = startWith + (lampRows * (lampColumns-1));
   }
-  return result;
+
+  for (pixel = startWith; pixel <= endWith; pixel += incrementBy) {
+    setPixelColor(pixel,color);
+  }
 }
 
-uint8_t getColumnBottomLed(uint8_t column) {
-  uint8_t result;
-  switch (column) {
-  case 1:  
-  case 8:  
-    result = 7; 
-    break;
-  case 2:
-  case 9:
-    result = 11; 
-    break;
-  case 3: 
-    result = 8; 
-    break;
-  case 4: 
-    result = 5; 
-    break;
-  case 5: 
-    result = 9; 
-    break;
-  case 6: 
-    result = 6; 
-    break;
-  case 7:
-  case 0: 
-    result = 10; 
-    break;
+void WS2812FX::setColumnColor(uint8_t column, uint32_t color) {
+  uint8_t startWith;
+  uint8_t incrementBy;
+  uint8_t endWith;
+  uint16_t pixel;
+
+  if (lampRowsFirst) {
+    startWith = column;
+    incrementBy = lampColumns;
+    endWith = startWith + (lampColumns * (lampRows-1));
+  } else {
+    startWith = column * lampRows;
+    incrementBy = 1;
+    endWith = startWith + (lampRows - 1);
   }
-  return result;
+
+  for (pixel = startWith; pixel <= endWith; pixel += incrementBy) {
+    setPixelColor(pixel,color);
+  }
 }
 
 uint16_t WS2812FX::rotate(bool dual) {
@@ -132,8 +116,7 @@ uint16_t WS2812FX::rotate(bool dual) {
     
     fade = round( pow(255, (1 - ((float) thisLedDistance / (lampColumns/2)))));
     tempColor = color_blend(backColor, SEGCOLOR(0), fade);
-    setPixelColor(getColumnTopLed(columnCounter),tempColor);
-    setPixelColor(getColumnBottomLed(columnCounter),tempColor);
+    setColumnColor(columnCounter,tempColor);
   }
 
   if (dual) {
@@ -150,8 +133,7 @@ uint16_t WS2812FX::rotate(bool dual) {
       
       fade = round( pow(255, (1 - ((float) thisLedDistance / (lampColumns/2)))));
       tempColor = color_blend(backColor, SEGCOLOR(1), fade);
-      setPixelColor(getColumnTopLed(columnCounter),tempColor);
-      setPixelColor(getColumnBottomLed(columnCounter),tempColor);
+      setColumnColor(columnCounter,tempColor);
     }
   }
 

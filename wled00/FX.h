@@ -637,7 +637,9 @@ class WS2812FX {
 
     void load_gradient_palette(uint8_t);
     void handle_palette(void);
-    void fill(uint32_t);
+    void fill(uint32_t),
+         setRowColor(uint8_t, uint32_t),
+         setColumnColor(uint8_t, uint32_t);
 
     bool
       _useRgbw = false,
