@@ -125,13 +125,13 @@ uint16_t WS2812FX::rotate(bool dual) {
     if (dual) {
       thisOppositeLedDistance = ((float) lampColumns/2.0 ) - thisLedDistance;
       if (thisOppositeLedDistance < ((float)lampColumns * lampAngle/2 )) {
-        fade = round( pow(255, (1 - ((float) thisOppositeLedDistance / (lampColumns * lampAngle/2 )))));
+        fade = round( 255 * pow( 1 - ((float) 2.0 * thisOppositeLedDistance / (lampColumns * lampAngle)), 2));
         tempColor = color_blend(tempColor, SEGCOLOR(1), fade);
       }
     }
 
     if (thisLedDistance < ((float)lampColumns * lampAngle/2 )) {
-      fade = round( pow(255, (1 - ((float) thisLedDistance / (lampColumns * lampAngle/2 )))));
+      fade = round( 255 * pow( 1 - ((float) 2.0 * thisLedDistance / (lampColumns * lampAngle)), 2));
       tempColor = color_blend(tempColor, SEGCOLOR(0), fade);
     } 
 
