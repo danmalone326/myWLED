@@ -33,8 +33,8 @@
  * Rotating lamp
  */
 
-uint8_t lampColumns = 7;
-uint8_t lampRows = 5;
+uint8_t lampColumns = 6;
+uint8_t lampRows = 3;
 bool lampRowsFirst = false;
 
 //    setPixelColor(getColumnTopLed(columnCounter),tempColor);
@@ -85,6 +85,7 @@ uint16_t WS2812FX::rotate(bool dual) {
   uint8_t columnCounter;
   uint8_t  fade;
   float thisLedDistance;
+  float thisOppositeLedDistance;
   uint32_t backColor;
   uint32_t tempColor;
 
@@ -93,48 +94,49 @@ uint16_t WS2812FX::rotate(bool dual) {
   } else {
     backColor = SEGCOLOR(1);
   }
-  fill(backColor);
 
   float rotationPosition;
-  uint8_t centeredOn;
+  float rotationPositionOpposite;
 
-  uint32_t maxRotateTime = 10000;
+  float lampAngle = (float) SEGMENT.intensity / 255;
+  if (lampAngle == 0) {
+    lampAngle = 1/255;
+  }
+
+  uint32_t maxRotateTime = 5000;
   uint32_t minRotateTime = 50;
 
-  uint32_t rotateTime = ((maxRotateTime - minRotateTime) * (255 - SEGMENT.speed) / 255) + minRotateTime;
-  
+  uint32_t rotateTime = ((maxRotateTime - minRotateTime) * (255 - SEGMENT.speed) / 255) + minRotateTime; 
   uint32_t thisFrameTime = now % rotateTime;
 
-  rotationPosition = (float(lampColumns) * thisFrameTime / rotateTime) + 1;
-  centeredOn = round(rotationPosition);
+  rotationPosition = (float(lampColumns) * thisFrameTime / rotateTime);
+  rotationPositionOpposite = fmod(rotationPosition + (lampColumns / 2), lampColumns);
   
-  for (columnCounter=centeredOn-1; columnCounter<=centeredOn+1;columnCounter++) {
+  for (columnCounter=0; columnCounter<lampColumns;columnCounter++) {
     thisLedDistance = rotationPosition - columnCounter;
     if (thisLedDistance < 0) {
       thisLedDistance = -thisLedDistance;
     }
-    
-    fade = round( pow(255, (1 - ((float) thisLedDistance / (lampColumns/2)))));
-    tempColor = color_blend(backColor, SEGCOLOR(0), fade);
-    setColumnColor(columnCounter,tempColor);
-  }
+    if (thisLedDistance > ((float) lampColumns/2.0)) {
+      thisLedDistance = (float)lampColumns - thisLedDistance;
+    }
 
-  if (dual) {
-    rotationPosition -= (lampColumns / 2);
-    if (rotationPosition < 1) { 
-      rotationPosition += lampColumns; 
-    }
-    centeredOn = round(rotationPosition);
-    for (columnCounter=centeredOn-1; columnCounter<=centeredOn+1;columnCounter++) {
-      thisLedDistance = rotationPosition - columnCounter;
-      if (thisLedDistance < 0) {
-        thisLedDistance = -thisLedDistance;
+    tempColor = backColor;
+    if (dual) {
+      thisOppositeLedDistance = ((float) lampColumns/2.0 ) - thisLedDistance;
+      if (thisOppositeLedDistance < ((float)lampColumns * lampAngle/2 )) {
+        fade = round( pow(255, (1 - ((float) thisOppositeLedDistance / (lampColumns * lampAngle/2 )))));
+        tempColor = color_blend(tempColor, SEGCOLOR(1), fade);
       }
-      
-      fade = round( pow(255, (1 - ((float) thisLedDistance / (lampColumns/2)))));
-      tempColor = color_blend(backColor, SEGCOLOR(1), fade);
-      setColumnColor(columnCounter,tempColor);
     }
+
+    if (thisLedDistance < ((float)lampColumns * lampAngle/2 )) {
+      fade = round( pow(255, (1 - ((float) thisLedDistance / (lampColumns * lampAngle/2 )))));
+      tempColor = color_blend(tempColor, SEGCOLOR(0), fade);
+    } 
+
+    setColumnColor(columnCounter,tempColor);      
+  
   }
 
   return FRAMETIME;
