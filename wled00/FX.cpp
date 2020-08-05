@@ -82,12 +82,17 @@ void WS2812FX::setColumnColor(uint8_t column, uint32_t color) {
 }
 
 uint16_t WS2812FX::rotate(bool dual) {
-  uint8_t columnCounter;
+  uint8_t  columnCounter;
   uint8_t  fade;
-  float thisLedDistance;
-  float thisOppositeLedDistance;
   uint32_t backColor;
   uint32_t tempColor;
+
+  float thisLedDistance;
+  float thisOppositeLedDistance;
+  float rotationPosition;
+  float rotationPositionOpposite;
+  float lampAngle;
+  float minLampAngle;
 
   if (dual) {
     backColor = SEGCOLOR(2);
@@ -95,13 +100,8 @@ uint16_t WS2812FX::rotate(bool dual) {
     backColor = SEGCOLOR(1);
   }
 
-  float rotationPosition;
-  float rotationPositionOpposite;
-
-  float lampAngle = (float) SEGMENT.intensity / 255;
-  if (lampAngle == 0) {
-    lampAngle = 1/255;
-  }
+  minLampAngle = 2.0/lampColumns;
+  lampAngle = (((float) SEGMENT.intensity / 255) * (1.0 - minLampAngle)) + minLampAngle;
 
   uint32_t maxRotateTime = 5000;
   uint32_t minRotateTime = 50;
