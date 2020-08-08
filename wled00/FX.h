@@ -101,7 +101,8 @@
 #define IS_REVERSE      ((SEGMENT.options & REVERSE     ) == REVERSE     )
 #define IS_SELECTED     ((SEGMENT.options & SELECTED    ) == SELECTED    )
 
-#define MODE_COUNT  114
+#define MODE_COUNT  116
+// ## NEW MODE ## This should be 1 greater than the largest mode number below (0 based count)
 
 #define FX_MODE_STATIC                   0
 #define FX_MODE_BLINK                    1
@@ -216,7 +217,11 @@
 #define FX_MODE_FLOW                   110
 #define FX_MODE_CHUNCHUN               111
 #define FX_MODE_LAMP_ROTATE            112
-#define FX_MODE_LAMP_ROTATE_DUAL     113
+#define FX_MODE_LAMP_ROTATE_DUAL       113
+#define FX_MODE_LAMP_DUAL_SOLID        114
+#define FX_MODE_LAMP_TRI_SOLID         115
+// ## NEW MODE ## Add new mode number here ^^^
+
 
 class WS2812FX {
   typedef uint16_t (WS2812FX::*mode_ptr)(void);
@@ -422,7 +427,10 @@ class WS2812FX {
       _mode[FX_MODE_CHUNCHUN]                = &WS2812FX::mode_chunchun;
       _mode[FX_MODE_LAMP_ROTATE]             = &WS2812FX::mode_lamp_rotate;
       _mode[FX_MODE_LAMP_ROTATE_DUAL]        = &WS2812FX::mode_lamp_rotate_dual;
-
+      _mode[FX_MODE_LAMP_DUAL_SOLID]         = &WS2812FX::mode_lamp_dual_solid;
+      _mode[FX_MODE_LAMP_TRI_SOLID]          = &WS2812FX::mode_lamp_tri_solid;
+      // ## NEW MODE ## Add the function for the new mode to the function array
+      
       _brightness = DEFAULT_BRIGHTNESS;
       currentPalette = CRGBPalette16(CRGB::Black);
       targetPalette = CloudColors_p;
@@ -619,7 +627,10 @@ class WS2812FX {
       mode_flow(void),
       mode_chunchun(void),
       mode_lamp_rotate(void),
-      mode_lamp_rotate_dual(void);
+      mode_lamp_rotate_dual(void),
+      mode_lamp_dual_solid(void),
+      mode_lamp_tri_solid(void);
+      // ## NEW MODE ## Define the function for the new mode
 
   private:
     NeoPixelWrapper *bus;
@@ -652,6 +663,7 @@ class WS2812FX {
 
     // mode helper functions
     uint16_t
+      multi_solid(uint8_t colors),
       rotate(bool dual),
       blink(uint32_t, uint32_t, bool strobe, bool),
       candle(bool),
@@ -710,8 +722,10 @@ const char JSON_mode_names[] PROGMEM = R"=====([
 "Twinklefox","Twinklecat","Halloween Eyes","Solid Pattern","Solid Pattern Tri","Spots","Spots Fade","Glitter","Candle","Fireworks Starburst",
 "Fireworks 1D","Bouncing Balls","Sinelon","Sinelon Dual","Sinelon Rainbow","Popcorn","Drip","Plasma","Percent","Ripple Rainbow",
 "Heartbeat","Pacifica","Candle Multi", "Solid Glitter","Sunrise","Phased","Twinkleup","Noise Pal", "Sine","Phased Noise",
-"Flow","Chunchun","1 Lamp Rotate","1 Lamp Rotate Double"
+"Flow","Chunchun","1 Lamp Rotate","1 Lamp Rotate Double","1 Lamp Dual Solid","1 Lamp Tri Solid"
 ])=====";
+// ## NEW MODE ## Add display name for new mode. Order must match mode numbers.
+
 
 
 const char JSON_palette_names[] PROGMEM = R"=====([

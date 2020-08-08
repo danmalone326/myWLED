@@ -100,7 +100,7 @@ uint16_t WS2812FX::rotate(bool dual) {
     backColor = SEGCOLOR(1);
   }
 
-  minLampAngle = 2.0/lampColumns;
+  minLampAngle = 2.0/lampColumns; // minimum of 2 columns for the rotating portion
   lampAngle = (((float) SEGMENT.intensity / 255) * (1.0 - minLampAngle)) + minLampAngle;
 
   uint32_t maxRotateTime = 5000;
@@ -149,6 +149,40 @@ uint16_t WS2812FX::mode_lamp_rotate(void) {
 
 uint16_t WS2812FX::mode_lamp_rotate_dual(void) {
   return rotate(true);  
+}
+
+uint16_t WS2812FX::multi_solid(uint8_t colors) {
+  uint8_t colorCounter;
+  uint8_t columnCounter;
+  uint8_t offset;
+  uint8_t skip;
+  float   step;
+  uint8_t fromColumn;
+  uint8_t nextFromColumn;
+
+
+  offset = lampColumns * SEGMENT.speed / 256; // 256 so result is always between 0 and lampColumns
+  step = (float) lampColumns / colors; 
+  skip = round(step * (255-SEGMENT.intensity) / 255);
+
+  fill(0);
+  for (colorCounter=0; colorCounter<colors; colorCounter++) {
+    fromColumn = round((step * colorCounter)) + offset;
+    nextFromColumn = round((step * (colorCounter + 1))) + offset - skip;
+    for(columnCounter=fromColumn; columnCounter<nextFromColumn; columnCounter++) {
+      setColumnColor(columnCounter%lampColumns,SEGCOLOR(colorCounter));
+    }
+  }
+  
+  return FRAMETIME;
+}
+
+uint16_t WS2812FX::mode_lamp_dual_solid(void) {
+  return multi_solid(2);
+}
+
+uint16_t WS2812FX::mode_lamp_tri_solid(void) {
+  return multi_solid(3);
 }
 
 
