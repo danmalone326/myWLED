@@ -101,7 +101,7 @@
 #define IS_REVERSE      ((SEGMENT.options & REVERSE     ) == REVERSE     )
 #define IS_SELECTED     ((SEGMENT.options & SELECTED    ) == SELECTED    )
 
-#define MODE_COUNT  116
+#define MODE_COUNT  118
 // ## NEW MODE ## This should be 1 greater than the largest mode number below (0 based count)
 
 #define FX_MODE_STATIC                   0
@@ -220,6 +220,8 @@
 #define FX_MODE_LAMP_ROTATE_DUAL       113
 #define FX_MODE_LAMP_DUAL_SOLID        114
 #define FX_MODE_LAMP_TRI_SOLID         115
+#define FX_MODE_LAMP_UP                116
+#define FX_MODE_LAMP_UP_DOWN           117
 // ## NEW MODE ## Add new mode number here ^^^
 
 
@@ -429,6 +431,8 @@ class WS2812FX {
       _mode[FX_MODE_LAMP_ROTATE_DUAL]        = &WS2812FX::mode_lamp_rotate_dual;
       _mode[FX_MODE_LAMP_DUAL_SOLID]         = &WS2812FX::mode_lamp_dual_solid;
       _mode[FX_MODE_LAMP_TRI_SOLID]          = &WS2812FX::mode_lamp_tri_solid;
+      _mode[FX_MODE_LAMP_UP]                 = &WS2812FX::mode_lamp_up;
+      _mode[FX_MODE_LAMP_UP_DOWN]            = &WS2812FX::mode_lamp_up_down;
       // ## NEW MODE ## Add the function for the new mode to the function array
       
       _brightness = DEFAULT_BRIGHTNESS;
@@ -629,7 +633,9 @@ class WS2812FX {
       mode_lamp_rotate(void),
       mode_lamp_rotate_dual(void),
       mode_lamp_dual_solid(void),
-      mode_lamp_tri_solid(void);
+      mode_lamp_tri_solid(void),
+      mode_lamp_up(void),
+      mode_lamp_up_down(void);
       // ## NEW MODE ## Define the function for the new mode
 
   private:
@@ -663,6 +669,7 @@ class WS2812FX {
 
     // mode helper functions
     uint16_t
+      up_down(bool down),
       multi_solid(uint8_t colors),
       rotate(bool dual),
       blink(uint32_t, uint32_t, bool strobe, bool),
@@ -722,7 +729,7 @@ const char JSON_mode_names[] PROGMEM = R"=====([
 "Twinklefox","Twinklecat","Halloween Eyes","Solid Pattern","Solid Pattern Tri","Spots","Spots Fade","Glitter","Candle","Fireworks Starburst",
 "Fireworks 1D","Bouncing Balls","Sinelon","Sinelon Dual","Sinelon Rainbow","Popcorn","Drip","Plasma","Percent","Ripple Rainbow",
 "Heartbeat","Pacifica","Candle Multi", "Solid Glitter","Sunrise","Phased","Twinkleup","Noise Pal", "Sine","Phased Noise",
-"Flow","Chunchun","1 Lamp Rotate","1 Lamp Rotate Double","1 Lamp Dual Solid","1 Lamp Tri Solid"
+"Flow","Chunchun","1 Lamp Rotate","1 Lamp Rotate Double","1 Lamp Dual Solid","1 Lamp Tri Solid","1 Lamp Up","1 Lamp Up Down"
 ])=====";
 // ## NEW MODE ## Add display name for new mode. Order must match mode numbers.
 

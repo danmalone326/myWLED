@@ -45,6 +45,8 @@ void WS2812FX::setRowColor(uint8_t row, uint32_t color) {
   uint8_t endWith;
   uint16_t pixel;
 
+  row = lampRows - row - 1;  // make rows count from bottom up, should be a variable
+
   if (lampRowsFirst) {
     startWith = row * lampColumns;
     incrementBy = 1;
@@ -183,6 +185,71 @@ uint16_t WS2812FX::mode_lamp_dual_solid(void) {
 
 uint16_t WS2812FX::mode_lamp_tri_solid(void) {
   return multi_solid(3);
+}
+
+
+uint16_t WS2812FX::up_down(bool down) {
+  uint8_t  rowCounter;
+  uint8_t  tempRow;
+  uint8_t  fade;
+  uint32_t tempColor;
+
+  float thisLedDistance;
+
+  uint32_t maxCycleTime = 10000;
+  uint32_t minCycleTime = 50;
+
+  uint32_t cycleTime = ((maxCycleTime - minCycleTime) * (255 - SEGMENT.speed) / 255) + minCycleTime; 
+  uint32_t stateTime = cycleTime / 4;
+  uint32_t thisFrameTime = now % cycleTime;
+  uint32_t thisFrameStateTime = thisFrameTime % stateTime;
+  float thisFrameStatePosition = (float) lampRows * thisFrameStateTime / stateTime;
+  uint8_t state = thisFrameTime / stateTime; 
+           // 0 = coming in, 1 = solid, 2 = going out, 3/other = background
+
+  fill(SEGCOLOR(1));
+
+  if (state == 2) {
+    thisFrameStatePosition = lampRows - thisFrameStatePosition;
+  }
+
+//  if (state == 0) {
+//     fill(0xFF0000);
+//  } else if (state == 1) {
+//     fill(0x00FF00);    
+//  } else if (state == 2) {
+//     fill(0x0000FF);
+//  }
+  
+  if ((state == 0) || (state == 2)) {
+    for (rowCounter = 0; rowCounter < lampRows; rowCounter++) {
+      if ((float) rowCounter < thisFrameStatePosition - 1.0) {
+         tempColor = SEGCOLOR(0);
+      } else if ((float) rowCounter < (thisFrameStatePosition)) {
+        fade = round( 255 * (thisFrameStatePosition - rowCounter));
+        tempColor = color_blend(SEGCOLOR(1), SEGCOLOR(0), fade);        
+      } else {
+        tempColor = SEGCOLOR(1);
+      }
+      tempRow = rowCounter;
+      if ((state == 2) && !down) {
+        tempRow = lampRows - tempRow - 1;
+      }
+      setRowColor(tempRow,tempColor);
+    }
+  } else if (state == 1) {
+    fill(SEGCOLOR(0));
+  }
+  
+  return FRAMETIME;
+}
+
+uint16_t WS2812FX::mode_lamp_up(void) {
+  return up_down(false);
+}
+
+uint16_t WS2812FX::mode_lamp_up_down(void) {
+  return up_down(true);
 }
 
 
